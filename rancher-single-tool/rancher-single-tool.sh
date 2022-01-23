@@ -350,8 +350,8 @@ function getrancherversion() {
 function gen10yearcerts() {
     if [[ "${RANCHER_SSL_HOSTNAME}" != "" ]]; then
         recho "Generating new 10-year SSL certificates for your Rancher installation."
-        echo docker run -v /etc/rancherssl/certs:/certs -e CA_SUBJECT="Generic CA" -e CA_EXPIRE="3650" -e SSL_EXPIRE="3650" -e SSL_SUBJECT="${RANCHER_SSL_HOSTNAME}" -e SSL_DNS="${RANCHER_SSL_HOSTNAME}" -e SILENT="true" patrick0057/genericssl
-        docker run -v /etc/rancherssl/certs:/certs -e CA_SUBJECT="Generic CA" -e CA_EXPIRE="3650" -e SSL_EXPIRE="3650" -e SSL_SUBJECT="${RANCHER_SSL_HOSTNAME}" -e SSL_DNS="${RANCHER_SSL_HOSTNAME}" -e SILENT="true" patrick0057/genericssl
+        echo docker run -v /etc/rancherssl/certs:/certs -e CA_SUBJECT="Generic CA" -e CA_EXPIRE="3650" -e SSL_EXPIRE="3650" -e SSL_IP="${RANCHER_SSL_HOSTNAME}" -e SSL_SUBJECT="${RANCHER_SSL_HOSTNAME}" -e SSL_DNS="${RANCHER_SSL_HOSTNAME}" -e SILENT="true" patrick0057/genericssl
+        docker run -v /etc/rancherssl/certs:/certs -e CA_SUBJECT="Generic CA" -e CA_EXPIRE="3650" -e SSL_EXPIRE="3650" -e SSL_IP="${RANCHER_SSL_HOSTNAME}" -e SSL_SUBJECT="${RANCHER_SSL_HOSTNAME}" -e SSL_DNS="${RANCHER_SSL_HOSTNAME}" -e SILENT="true" patrick0057/genericssl
         checkpipecmd "Failed to generate certificates from docker image patrick0057/genericssl"
     fi
 }
@@ -370,13 +370,18 @@ function stopandbackuprancher() {
             docker rename rancher-data rancher-data.${START_TIME}
         fi
     fi
+    
+    sleep 5
+    
     recho "Stopping Rancher container ${RANCHERSERVER}"
     docker stop ${RANCHERSERVER}
     checkpipecmd "Error while stopping Rancher container, aborting script!"
+    sleep 5
 
     recho "Creating rancher-data container"
     docker create --volumes-from ${RANCHERSERVER} --name rancher-data ${RANCHER_IMAGE_NAME}:${CURRENT_RANCHER_VERSION}
     checkpipecmd "Error while creating Rancher data container, aborting script!"
+    sleep 5
 
     RANCHER_BACKUP_ARCHIVE="rancher-data-backup-${CURRENT_RANCHER_VERSION}-${START_TIME}.tar.gz"
 
